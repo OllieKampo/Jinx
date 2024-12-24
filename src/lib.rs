@@ -11,6 +11,9 @@ mod moremath;
 fn vectors(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(moremath::vectors::vector_add, m)?)?;
     m.add_function(wrap_pyfunction!(moremath::vectors::vector_subtract, m)?)?;
+    m.add_function(wrap_pyfunction!(moremath::vectors::vector_multiply, m)?)?;
+    m.add_function(wrap_pyfunction!(moremath::vectors::vector_divide, m)?)?;
+    m.add_function(wrap_pyfunction!(moremath::vectors::cloud_add, m)?)?;
     Ok(())
 }
 

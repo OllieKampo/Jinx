@@ -1,17 +1,22 @@
 use pyo3::prelude::*;
+use pyo3::exceptions::PyValueError;
 
-fn vector_apply<F>(py: Python, vector_a: Vec<f64>, vector_b: PyObject, f: F) -> PyResult<Vec<f64>>
-where
-    F: Fn(f64, f64) -> f64,
-{
-    if vector_a.len() == 0 {
-        return Ok(Vec::new());
-    }
+pub fn extract_vector_b(py: Python, len: usize, vector_b: PyObject) -> PyResult<Vec<f64>> {
     let vector_b = if let Ok(b) = vector_b.extract::<f64>(py) {
-        vec![b; vector_a.len()]
+        vec![b; len]
     } else {
         vector_b.extract::<Vec<f64>>(py)?
     };
+    if vector_b.len() != len {
+        return Err(PyValueError::new_err("Vector lengths do not match"));
+    }
+    return Ok(vector_b);
+}
+
+pub fn vector_apply<F>(vector_a: &Vec<f64>, vector_b: &Vec<f64>, f: &mut F) -> PyResult<Vec<f64>>
+where
+    F: FnMut(f64, f64) -> f64,
+{
     let result = vector_a
         .iter()
         .zip(vector_b.iter())
@@ -22,33 +27,24 @@ where
 
 #[pyfunction]
 pub fn vector_add(py: Python, vector_a: Vec<f64>, vector_b: PyObject) -> PyResult<Vec<f64>> {
-    return vector_apply(py, vector_a, vector_b, |a, b| a + b);
+    let vector_b = extract_vector_b(py, vector_a.len(), vector_b)?;
+    return vector_apply(&vector_a, &vector_b, &mut |a, b| a + b);
 }
 
 #[pyfunction]
 pub fn vector_subtract(py: Python, vector_a: Vec<f64>, vector_b: PyObject) -> PyResult<Vec<f64>> {
-    return vector_apply(py, vector_a, vector_b, |a, b| a - b);
+    let vector_b = extract_vector_b(py, vector_a.len(), vector_b)?;
+    return vector_apply(&vector_a, &vector_b, &mut |a, b| a - b);
 }
 
 #[pyfunction]
 pub fn vector_multiply(py: Python, vector_a: Vec<f64>, vector_b: PyObject) -> PyResult<Vec<f64>> {
-    return vector_apply(py, vector_a, vector_b, |a, b| a * b);
+    let vector_b = extract_vector_b(py, vector_a.len(), vector_b)?;
+    return vector_apply(&vector_a, &vector_b, &mut |a, b| a * b);
 }
 
 #[pyfunction]
 pub fn vector_divide(py: Python, vector_a: Vec<f64>, vector_b: PyObject) -> PyResult<Vec<f64>> {
-    return vector_apply(py, vector_a, vector_b, |a, b| a / b);
+    let vector_b = extract_vector_b(py, vector_a.len(), vector_b)?;
+    return vector_apply(&vector_a, &vector_b, &mut |a, b| a / b);
 }
-
-// #[pyfunction]
-// pub fn cloud_add(py: Python, cloud_a: Vec<Vec<f64>>, cloud_b: Vec<Vec<f64>>) -> PyResult<Vec<Vec<f64>>> {
-//     if cloud_a.len() == 0 {
-//         return Ok(Vec::new());
-//     }
-//     let result = cloud_a
-//         .iter()
-//         .zip(cloud_b.iter())
-//         .map(|(a, b)| vector_add(py, a.clone(), b.clone()).unwrap())
-//         .collect();
-//     return Ok(result);
-// }
