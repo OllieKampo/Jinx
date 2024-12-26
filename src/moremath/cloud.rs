@@ -44,12 +44,49 @@ pub fn cloud_divide(_py: Python, cloud_a: Vec<Vec<f64>>, cloud_b: Vec<Vec<f64>>)
     return rust_result_to_py_result(cloud_apply(&cloud_a, &cloud_b, &mut |a, b| a / b));
 }
 
+#[pyclass(module="cloud")]
+struct Cloud {
+    data: Vec<Vec<f64>>,
+}
+
+// How do we use generics in structs?
+#[pymethods]
+impl Cloud {
+    #[new]
+    fn new(data: Vec<Vec<f64>>) -> Self {
+        Cloud { data }
+    }
+
+    #[getter]
+    fn get_data(&self) -> Vec<Vec<f64>> {
+        self.data.clone()
+    }
+
+    pub fn add_assign(&mut self, other: &Cloud) -> () {
+        self.data = cloud_apply(&self.data, &other.data, &mut |a, b| a + b).unwrap();
+    }
+
+    pub fn subtract_assign(&mut self, other: &Cloud) -> () {
+        self.data = cloud_apply(&self.data, &other.data, &mut |a, b| a - b).unwrap();
+    }
+
+    pub fn multiply_assign(&mut self, other: &Cloud) -> () {
+        self.data = cloud_apply(&self.data, &other.data, &mut |a, b| a * b).unwrap();
+    }
+
+    pub fn divide_assign(&mut self, other: &Cloud) -> () {
+        self.data = cloud_apply(&self.data, &other.data, &mut |a, b| a / b).unwrap();
+    }
+}
+
+
 #[pymodule]
 #[pyo3(name="cloud")]
-fn moremath_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
+pub fn mod_cloud(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(cloud_add, m)?)?;
     m.add_function(wrap_pyfunction!(cloud_subtract, m)?)?;
     m.add_function(wrap_pyfunction!(cloud_multiply, m)?)?;
     m.add_function(wrap_pyfunction!(cloud_divide, m)?)?;
+    m.add_class::<Cloud>()?;
     Ok(())
 }
