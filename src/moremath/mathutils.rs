@@ -1,9 +1,9 @@
-use num::Float;
+use pyo3::prelude::*;
 
 /// Exponentially decay a value between a given range (inclusive).
 pub fn exp_decay_between<T>(value: &T, min: &T, max: &T) -> T
 where
-    T: num::Float + num::FromPrimitive + std::ops::Sub<Output = T>
+    T: num::Float + num::FromPrimitive
 {
     if value < min {
         return *min;
@@ -61,33 +61,32 @@ pub fn closest_factors(value: usize) -> (usize, usize) {
     return (x_factor, y_factor);
 }
 
-// #[derive(Clone, Copy)]
-// struct Summer {
-//     s: isize,
-// }
+#[pyfunction]
+pub fn py_exp_decay_between(value: f64, min: f64, max: f64) -> f64 {
+    return exp_decay_between(&value, &min, &max);
+}
 
-// impl Summer {
-//     fn pow(&self, p: isize) {
-//         println!("pow({})", p);
-//     }
-// }
+#[pyfunction]
+pub fn py_normalize_between(values: Vec<f64>, lower: f64, upper: f64) -> Vec<f64> {
+    return normalize_between(&values, &lower, &upper);
+}
 
-// impl std::iter::Sum<i32> for Summer {
-//     fn sum<I>(iter: I) -> Self
-//     where
-//         I: Iterator<Item = i32>,
-//     {
-//         let mut result = 0isize;
-//         for v in iter {
-//             result += v as isize;
-//         }
-//         Summer { s: result }
-//     }
-// }
+#[pyfunction]
+pub fn py_normalize_sum(values: Vec<f64>, sum: f64) -> Vec<f64> {
+    return normalize_sum(values, sum);
+}
 
-// fn main() {
-//     let a1: i32 = (1i32..10).sum();
-//     let a2: Summer = (1i32..10).sum();
-//     let b1 = a1.pow(2);
-//     let b2 = a2.pow(2);
-// }
+#[pyfunction]
+pub fn py_closest_factors(value: usize) -> (usize, usize) {
+    return closest_factors(value);
+}
+
+#[pymodule]
+#[pyo3(name="mathutils")]
+pub fn mod_cloud(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(py_exp_decay_between, m)?)?;
+    m.add_function(wrap_pyfunction!(py_normalize_between, m)?)?;
+    m.add_function(wrap_pyfunction!(py_normalize_sum, m)?)?;
+    m.add_function(wrap_pyfunction!(py_closest_factors, m)?)?;
+    Ok(())
+}
