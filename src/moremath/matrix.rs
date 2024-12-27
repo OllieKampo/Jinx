@@ -1,6 +1,13 @@
-use std::ops::Sub;
 
+/// TODO: Could we do this as a decorator macro?
+macro_rules! assert_same_size {
+    ($self:ident, $other:ident) => {
+        assert_eq!($self.rows, $other.rows);
+        assert_eq!($self.cols, $other.cols);
+    };
+}
 
+#[derive(Clone)]
 pub struct Matrix {
     pub data: Vec<f64>,
     pub rows: usize,
@@ -24,6 +31,18 @@ impl Matrix {
         self.data[row * self.cols + col] = value;
     }
 
+    #[inline]
+    pub fn apply_element_wise_operator(&mut self, other: &Matrix, operator: fn(&Self, &Matrix, usize, usize) -> f64) {
+        assert_eq!(self.rows, other.rows);
+        assert_eq!(self.cols, other.cols);
+        for i in 0..self.rows {
+            for j in 0..self.cols {
+                let value = operator(self, other, i, j);
+                self.set(i, j, value);
+            }
+        }
+    }
+
     pub fn transpose(&self) -> Matrix {
         let mut result = Matrix::new(self.cols, self.rows);
         for i in 0..self.rows {
@@ -33,53 +52,68 @@ impl Matrix {
         }
         result
     }
+}
 
-    pub fn multiply(&self, other: &Matrix) -> Matrix {
-        assert_eq!(self.cols, other.rows);
-        let mut result = Matrix::new(self.rows, other.cols);
-        for i in 0..self.rows {
-            for j in 0..other.cols {
-                let mut sum = 0.0;
-                for k in 0..self.cols {
-                    sum += self.get(i, k) * other.get(k, j);
-                }
-                result.set(i, j, sum);
-            }
-        }
-        result
+impl std::ops::Add<&Matrix> for &Matrix {
+    type Output = Matrix;
+
+    fn add(self, other: &Matrix) -> Matrix {
+        assert_same_size!(self, other);
+        let mut result = self.clone();
+        result.apply_element_wise_operator(other, |m, o, i, j| m.get(i, j) + o.get(i, j));
+        return result;
     }
+}
 
-    pub fn multiply_scalar(&self, scalar: f64) -> Matrix {
+// impl std::ops::Add<f64> for Matrix {
+//     type Output = Matrix;
+
+//     fn add(self, scalar: f64) -> Matrix {
+//         let mut result = self.clone();
+//         result.apply_element_wise_operator(&self, |m, _, i, j| m.get(i, j) + scalar);
+//         return result;
+//     }
+// }
+
+impl std::ops::Sub<&Matrix> for &Matrix {
+    type Output = Matrix;
+
+    fn sub(self, other: &Matrix) -> Matrix {
+        assert_same_size!(self, other);
         let mut result = Matrix::new(self.rows, self.cols);
         for i in 0..self.rows {
             for j in 0..self.cols {
-                result.set(i, j, self.get(i, j) * scalar);
+                let value = self.get(i, j) - other.get(i, j);
+                result.set(i, j, value);
             }
         }
-        result
+        return result;
     }
+}
 
-    pub fn add(&self, other: &Matrix) -> Matrix {
-        assert_eq!(self.rows, other.rows);
-        assert_eq!(self.cols, other.cols);
+impl std::ops::Sub<f64> for Matrix {
+    type Output = Matrix;
+
+    fn sub(self, scalar: f64) -> Matrix {
         let mut result = Matrix::new(self.rows, self.cols);
         for i in 0..self.rows {
             for j in 0..self.cols {
-                result.set(i, j, self.get(i, j) + other.get(i, j));
+                let value = self.get(i, j) - scalar;
+                result.set(i, j, value);
             }
         }
-        result
+        return result;
     }
+}
 
-    pub fn subtract(&self, other: &Matrix) -> Matrix {
-        assert_eq!(self.rows, other.rows);
-        assert_eq!(self.cols, other.cols);
-        let mut result = Matrix::new(self.rows, self.cols);
+impl std::fmt::Display for Matrix {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         for i in 0..self.rows {
             for j in 0..self.cols {
-                result.set(i, j, self.get(i, j) - other.get(i, j));
+                write!(f, "{:.2} ", self.get(i, j))?;
             }
+            writeln!(f)?;
         }
-        result
+        Ok(())
     }
 }
