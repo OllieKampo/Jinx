@@ -32,12 +32,10 @@ impl Matrix {
     }
 
     #[inline]
-    pub fn apply_element_wise_operator(&mut self, other: &Matrix, operator: fn(&Self, &Matrix, usize, usize) -> f64) {
-        assert_eq!(self.rows, other.rows);
-        assert_eq!(self.cols, other.cols);
+    pub fn apply_element_wise_operator(&mut self, operator: impl Fn(&Self, usize, usize) -> f64) {
         for i in 0..self.rows {
             for j in 0..self.cols {
-                let value = operator(self, other, i, j);
+                let value = operator(self, i, j);
                 self.set(i, j, value);
             }
         }
@@ -60,20 +58,20 @@ impl std::ops::Add<&Matrix> for &Matrix {
     fn add(self, other: &Matrix) -> Matrix {
         assert_same_size!(self, other);
         let mut result = self.clone();
-        result.apply_element_wise_operator(other, |m, o, i, j| m.get(i, j) + o.get(i, j));
+        result.apply_element_wise_operator(|matrix, i, j| matrix.get(i, j) + other.get(i, j));
         return result;
     }
 }
 
-// impl std::ops::Add<f64> for Matrix {
-//     type Output = Matrix;
+impl std::ops::Add<f64> for Matrix {
+    type Output = Matrix;
 
-//     fn add(self, scalar: f64) -> Matrix {
-//         let mut result = self.clone();
-//         result.apply_element_wise_operator(&self, |m, _, i, j| m.get(i, j) + scalar);
-//         return result;
-//     }
-// }
+    fn add(self, scalar: f64) -> Matrix {
+        let mut result = self.clone();
+        result.apply_element_wise_operator(|matrix, i, j| matrix.get(i, j) + scalar);
+        return result;
+    }
+}
 
 impl std::ops::Sub<&Matrix> for &Matrix {
     type Output = Matrix;
