@@ -32,11 +32,12 @@ impl Matrix {
     }
 
     #[inline]
-    pub fn apply_element_wise_operator(&mut self, operator: impl Fn(&Self, usize, usize) -> f64) {
+    pub fn apply_element_wise_operator(&mut self, operator: impl Fn(usize, usize, f64) -> f64) {
         for i in 0..self.rows {
             for j in 0..self.cols {
-                let value = operator(self, i, j);
-                self.set(i, j, value);
+                let current_value = self.get(i, j);
+                let new_value = operator(i, j, current_value);
+                self.set(i, j, new_value);
             }
         }
     }
@@ -58,7 +59,7 @@ impl std::ops::Add<&Matrix> for &Matrix {
     fn add(self, other: &Matrix) -> Matrix {
         assert_same_size!(self, other);
         let mut result = self.clone();
-        result.apply_element_wise_operator(|matrix, i, j| matrix.get(i, j) + other.get(i, j));
+        result.apply_element_wise_operator(|i, j, v| v + other.get(i, j));
         return result;
     }
 }
@@ -68,7 +69,7 @@ impl std::ops::Add<f64> for Matrix {
 
     fn add(self, scalar: f64) -> Matrix {
         let mut result = self.clone();
-        result.apply_element_wise_operator(|matrix, i, j| matrix.get(i, j) + scalar);
+        result.apply_element_wise_operator(|_, _, v| v + scalar);
         return result;
     }
 }
@@ -78,13 +79,8 @@ impl std::ops::Sub<&Matrix> for &Matrix {
 
     fn sub(self, other: &Matrix) -> Matrix {
         assert_same_size!(self, other);
-        let mut result = Matrix::new(self.rows, self.cols);
-        for i in 0..self.rows {
-            for j in 0..self.cols {
-                let value = self.get(i, j) - other.get(i, j);
-                result.set(i, j, value);
-            }
-        }
+        let mut result = self.clone();
+        result.apply_element_wise_operator(|i, j, v| v - other.get(i, j));
         return result;
     }
 }
@@ -94,12 +90,49 @@ impl std::ops::Sub<f64> for Matrix {
 
     fn sub(self, scalar: f64) -> Matrix {
         let mut result = Matrix::new(self.rows, self.cols);
-        for i in 0..self.rows {
-            for j in 0..self.cols {
-                let value = self.get(i, j) - scalar;
-                result.set(i, j, value);
-            }
-        }
+        result.apply_element_wise_operator(|_, _, v| v - scalar);
+        return result;
+    }
+}
+
+impl std::ops::Mul<&Matrix> for &Matrix {
+    type Output = Matrix;
+
+    fn mul(self, other: &Matrix) -> Matrix {
+        assert_same_size!(self, other);
+        let mut result = self.clone();
+        result.apply_element_wise_operator(|i, j, v| v * other.get(i, j));
+        return result;
+    }
+}
+
+impl std::ops::Mul<f64> for Matrix {
+    type Output = Matrix;
+
+    fn mul(self, scalar: f64) -> Matrix {
+        let mut result = Matrix::new(self.rows, self.cols);
+        result.apply_element_wise_operator(|_, _, v| v * scalar);
+        return result;
+    }
+}
+
+impl std::ops::Div<&Matrix> for &Matrix {
+    type Output = Matrix;
+
+    fn div(self, other: &Matrix) -> Matrix {
+        assert_same_size!(self, other);
+        let mut result = self.clone();
+        result.apply_element_wise_operator(|i, j, v| v / other.get(i, j));
+        return result;
+    }
+}
+
+impl std::ops::Div<f64> for Matrix {
+    type Output = Matrix;
+
+    fn div(self, scalar: f64) -> Matrix {
+        let mut result = Matrix::new(self.rows, self.cols);
+        result.apply_element_wise_operator(|_, _, v| v / scalar);
         return result;
     }
 }
