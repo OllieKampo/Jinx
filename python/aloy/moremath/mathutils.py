@@ -49,7 +49,7 @@ def exp_decay_between(
         return 0.0
     if value > max_:
         return 1.0
-    return (1.0 - (math.log(value - (min_ - 1.0)) / math.log(max_)))
+    return (1.0 - (math.log(value - (min_ - 1.0)) / math.log(max_ - (min_ - 1.0))))
 
 
 def normalize_between(

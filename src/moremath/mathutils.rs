@@ -12,7 +12,8 @@ where
     }
     let one: T = T::from_f64(1.0).unwrap();
     let begin: T = *value - (*min - one);
-    return one - (begin.log10() / max.log10());
+    let end: T = *max - (*min - one);
+    return one - (begin.log10() / end.log10());
 }
 
 /// Normalize a vector of numbers between a given range (inclusive).
@@ -83,7 +84,7 @@ pub fn py_closest_factors(value: usize) -> (usize, usize) {
 
 #[pymodule]
 #[pyo3(name="mathutils")]
-pub fn mod_cloud(m: &Bound<'_, PyModule>) -> PyResult<()> {
+pub fn mod_mathutils(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(py_exp_decay_between, m)?)?;
     m.add_function(wrap_pyfunction!(py_normalize_between, m)?)?;
     m.add_function(wrap_pyfunction!(py_normalize_sum, m)?)?;
