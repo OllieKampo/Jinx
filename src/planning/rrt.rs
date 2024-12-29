@@ -390,3 +390,11 @@ fn line_from_points(point_a: &Vec<f64>, point_b: &Vec<f64>) -> (f64, f64) {
     let c = point_a[1] - m * point_a[0];
     return (m, c);
 }
+
+
+#[pymodule]
+#[pyo3(name="rrt")]
+pub fn mod_rrt(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(rrt, m)?)?;
+    Ok(())
+}

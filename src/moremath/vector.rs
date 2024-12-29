@@ -51,7 +51,7 @@ pub fn vector_divide(py: Python, vector_a: Vec<f64>, vector_b: PyObject) -> PyRe
 
 #[pymodule]
 #[pyo3(name="vector")]
-fn mod_vector(m: &Bound<'_, PyModule>) -> PyResult<()> {
+pub fn mod_vector(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(vector_add, m)?)?;
     m.add_function(wrap_pyfunction!(vector_subtract, m)?)?;
     m.add_function(wrap_pyfunction!(vector_multiply, m)?)?;

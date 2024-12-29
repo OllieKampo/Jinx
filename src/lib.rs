@@ -1,43 +1,25 @@
 use pyo3::prelude::*;
-use pyo3::{wrap_pyfunction, wrap_pymodule};
+use pyo3::wrap_pymodule;
 
 
-mod planning;
-mod moremath;
-
-
-#[pymodule]
-#[pyo3(name="vectors")]
-fn vectors(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(moremath::vectors::vector_add, m)?)?;
-    m.add_function(wrap_pyfunction!(moremath::vectors::vector_subtract, m)?)?;
-    m.add_function(wrap_pyfunction!(moremath::vectors::vector_multiply, m)?)?;
-    m.add_function(wrap_pyfunction!(moremath::vectors::vector_divide, m)?)?;
-    Ok(())
-}
+pub mod common;
+pub mod planning;
+pub mod moremath;
 
 
 #[pymodule]
 #[pyo3(name="moremath")]
 fn moremath_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_wrapped(wrap_pymodule!(vectors))?;
+    m.add_wrapped(wrap_pymodule!(moremath::vector::mod_vector))?;
     m.add_wrapped(wrap_pymodule!(moremath::cloud::mod_cloud))?;
+    m.add_wrapped(wrap_pymodule!(moremath::mathutils::mod_mathutils))?;
     Ok(())
 }
-
-
-#[pymodule]
-#[pyo3(name="rrt")]
-fn rrt(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(planning::rrt::rrt, m)?)?;
-    Ok(())
-}
-
 
 #[pymodule]
 #[pyo3(name="planning")]
 fn planning_py(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_wrapped(wrap_pymodule!(rrt))?;
+    m.add_wrapped(wrap_pymodule!(planning::rrt::mod_rrt))?;
     Ok(())
 }
 

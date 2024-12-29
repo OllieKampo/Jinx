@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
-use pyo3::exceptions::PyValueError;
-use crate::moremath::vectors::vector_apply;
+use crate::moremath::vector::vector_apply;
+use crate::common::errors::rust_result_to_py_result;
 
 pub fn cloud_apply<F>(cloud_a: &Vec<Vec<f64>>, cloud_b: &Vec<Vec<f64>>, f: &mut F) -> Result<Vec<Vec<f64>>, &'static str>
 where
@@ -15,13 +15,6 @@ where
         .map(|(a, b)| vector_apply(&a, &b, f).unwrap())
         .collect();
     return Ok(result);
-}
-
-pub fn rust_result_to_py_result<T, E>(result: Result<T, E>) -> PyResult<T> {
-    return match result {
-        Ok(result) => Ok(result),
-        Err(e) => Err(PyValueError::new_err("Error")),
-    };
 }
 
 #[pyfunction]
