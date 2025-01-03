@@ -1,6 +1,15 @@
 use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 
+pub fn vector_apply<F: FnMut(f64, f64) -> f64>(vector_a: &Vec<f64>, vector_b: &Vec<f64>, f: &mut F) -> PyResult<Vec<f64>> {
+    let result = vector_a
+        .iter()
+        .zip(vector_b.iter())
+        .map(|(&a, &b)| f(a, b))
+        .collect();
+    return Ok(result);
+}
+
 pub fn extract_vector_b(py: Python, len: usize, vector_b: PyObject) -> PyResult<Vec<f64>> {
     let vector_b = if let Ok(b) = vector_b.extract::<f64>(py) {
         vec![b; len]
@@ -11,18 +20,6 @@ pub fn extract_vector_b(py: Python, len: usize, vector_b: PyObject) -> PyResult<
         return Err(PyValueError::new_err("Vector lengths do not match"));
     }
     return Ok(vector_b);
-}
-
-pub fn vector_apply<F>(vector_a: &Vec<f64>, vector_b: &Vec<f64>, f: &mut F) -> PyResult<Vec<f64>>
-where
-    F: FnMut(f64, f64) -> f64,
-{
-    let result = vector_a
-        .iter()
-        .zip(vector_b.iter())
-        .map(|(&a, &b)| f(a, b))
-        .collect();
-    return Ok(result);
 }
 
 #[pyfunction]

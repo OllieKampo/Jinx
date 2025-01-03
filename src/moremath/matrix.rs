@@ -7,6 +7,7 @@ macro_rules! assert_same_size {
     };
 }
 
+// TODO: How can we do dimensions as generics?
 #[derive(Clone)]
 pub struct Matrix {
     pub data: Vec<f64>,
