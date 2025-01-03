@@ -3,12 +3,21 @@ name = "aloy"
 version = "0.2.0"
 edition = "2021"
 
+[[bin]]
+name = "aloy"
+path = "src/main.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
 name = "aloy"
+path = "src/lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = "0.23.3"
 rand = "0.8.4"
 num = "0.4"
+nalgebra = "0.33"
+linfa = "0.6"
+linfa-nn = "0.7"
+threadpool = "1.8.1"
