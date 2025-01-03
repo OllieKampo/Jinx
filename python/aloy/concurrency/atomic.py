@@ -285,13 +285,13 @@ class _Atomic(Generic[_AT], metaclass=ABCMeta):
 
     def _check_context(self) -> None:  # pylint: disable=unused-private-member
         """Check that the object is currently being updated."""
-        if not self.__lock.is_locked:
-            raise AloyAtomicObjectError(
-                "Cannot update atomic object outside of a context manager."
-            )
         if not self.__lock.is_owner:
             raise AloyAtomicObjectError(
                 "Attempted to update atomic object from a non-owner thread."
+            )
+        if not self.__lock.is_locked:
+            raise AloyAtomicObjectError(
+                "Cannot update atomic object outside of a context manager."
             )
 
 
