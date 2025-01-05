@@ -124,8 +124,8 @@ ESM_contra = TypeVar(
 )
 
 
-class GetStateHint(Protocol[RT]):
-    """Protocol hint for the get state method."""
+class GetStateBound(Protocol[RT]):
+    """Protocol for a bound get state method."""
 
     def __call__(
         self,
@@ -135,14 +135,14 @@ class GetStateHint(Protocol[RT]):
         ...
 
 
-class GetState(Protocol[ESM_contra, RT]):
-    """Protocol for the get state method."""
+class GetStateUnbound(Protocol[ESM_contra, RT]):
+    """Protocol for an unbound get state method."""
 
     def __get__(
         self,
         instance: ESM_contra,
         owner: type[ESM_contra]
-    ) -> GetStateHint[RT]:
+    ) -> GetStateBound[RT]:
         ...
 
     def __call__(  # pylint: disable=no-self-argument
@@ -162,7 +162,7 @@ def declare_state(
     interval: float
 ) -> Callable[
     [Callable[[ESM_contra], RT]],
-    GetState[ESM_contra, RT]
+    GetStateUnbound[ESM_contra, RT]
 ]:
     """
     Decorator to declare a method of an external state manager as an external
@@ -181,7 +181,7 @@ def declare_state(
     """
     def decorator(
         getter: Callable[[ESM_contra], RT]
-    ) -> GetState[ESM_contra, RT]:
+    ) -> GetStateUnbound[ESM_contra, RT]:
         """Decorator converts the getter method."""
 
         def wrapper(
@@ -382,7 +382,7 @@ class ExternalStateManager(metaclass=ExternalStateManagerMeta):
         """Make a setter callback for external state."""
         def setter_callback(call_stats: AsyncCallStats, state: Any) -> None:
             state = ExternalState(
-                name=state,
+                name=name,
                 state=state,
                 time_obtained=call_stats.current_time,
                 delta_time=0.0,

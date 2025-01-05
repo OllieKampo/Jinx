@@ -316,7 +316,7 @@ def cycle_for(
     """
     if cycles < 0:
         raise ValueError("Cycles must be a non-negative real number.")
-    cycles = Fraction(int(cycles))
+    cycles = Fraction(cycles)
     if cycles > 0:
         cycled = Fraction(0.0)
         cycles_per_item = Fraction(f"1/{len(sequence)}")
@@ -617,16 +617,18 @@ def arg_max(
     default: int | None = None
 ) -> int:
     """Return the index of the largest element of an iterable."""
+    if default is None:
+        default = -1
     if key is None:
         return max(
             enumerate(iterable),
             key=lambda i: i[1],
-            default=(0, default)
+            default=(default, 0)
         )[0]
     return max(
         enumerate(iterable),
         key=lambda i: key(i[1]),
-        default=(0, default)
+        default=(default, 0)
     )[0]
 
 
